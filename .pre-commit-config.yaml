@@ -1,0 +1,12 @@
+exclude: "^$"
+fail_fast: true
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        stages: [commit]
+        language: python
+        entry: poetry run black .
+        types: [python]
+        language_version: python3.8

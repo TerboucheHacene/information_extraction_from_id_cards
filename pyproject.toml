@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "OCR_ID_Cards"
+version = "0.0.1"
+description = ""
+authors = ["haceneterbouche <hacene@powder.gg>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+black = "^21.12b0"
+pre-commit = "^2.16.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+# Black formatter configuration
+line-length = 89
+target-version = ["py38"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | \.sublime-workspace
+  | .idea
+  | .venv
+  | .vscode
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
