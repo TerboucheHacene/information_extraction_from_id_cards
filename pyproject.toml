@@ -5,11 +5,18 @@ description = ""
 authors = ["haceneterbouche <hacene@powder.gg>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8,<3.11"
+opencv-python = "^4.5.4"
+numpy = "^1.21.5"
+matplotlib = "^3.5.1"
+imutils = "^0.5.4"
+scipy = "^1.7.3"
+scikit-image = "^0.19.1"
 
 [tool.poetry.dev-dependencies]
 black = "^21.12b0"
 pre-commit = "^2.16.0"
+ipykernel = "^6.6.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
