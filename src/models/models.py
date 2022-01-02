@@ -1,4 +1,5 @@
 import tensorflow as tf
+from utils import CLASSES
 
 
 class Classifier(tf.keras.Model):
@@ -21,10 +22,25 @@ class Classifier(tf.keras.Model):
                 tf.keras.layers.Dense(num_classes, activation="softmax"),
             ]
         )
+        self.scale = tf.keras.layers.Rescaling(1.0 / 255)
+        self.flatten = tf.keras.layers.Flatten()
 
     def call(self, x) -> tf.Tensor:
+        x = self.scale(x)
         for layer in self.conv_layers:
             x = layer(x)
-        x = x.flatten()
+        x = self.flatten(x)
         x = self.mlp(x)
         return x
+
+
+class InferenceClassifier(tf.keras.Model):
+    def __init__(self, classifier: tf.keras.Model) -> None:
+        super().__init__()
+        self.classifier = classifier
+        self.index_to_class = tf.constant(value=CLASSES, dtype=tf.string)
+
+    def call(self, x):
+        y = self.classifier(x)
+        class_index = tf.math.argmax(y, axis=1)
+        return tf.gather(self.index_to_class, class_index)

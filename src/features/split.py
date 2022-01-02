@@ -1,5 +1,4 @@
 import os
-from posixpath import split
 import random
 from shutil import copyfile
 import shutil
@@ -37,7 +36,7 @@ CLASSES = [
     "W/",
     "Y/",
     "Z/",
-    "chevron/",
+    "</",
 ]
 
 
@@ -55,7 +54,12 @@ def delete_images_in_dir(split_path):
 
 
 def split_data(
-    source_path, training_path, testing_path, split_size, max_class_size=None
+    source_path,
+    training_path,
+    validation_path,
+    testing_path,
+    split_size,
+    max_class_size=None,
 ):
     for this_class in CLASSES:
         files = []
@@ -71,13 +75,22 @@ def split_data(
             if len(shuffled_set) > max_class_size:
                 shuffled_set = shuffled_set[0:max_class_size]
         testing_length = int(len(shuffled_set) * split_size)
-        training_length = int(len(shuffled_set) - testing_length)
+        validation_length = int(len(shuffled_set) * split_size)
+        training_length = int(len(shuffled_set) - testing_length - validation_length)
+
         training_set = shuffled_set[0:training_length]
+        validation_set = shuffled_set[
+            training_length : training_length + validation_length
+        ]
         testing_set = shuffled_set[-testing_length:]
 
         os.makedirs(training_path, exist_ok=True)
         for c in CLASSES:
             os.makedirs(training_path + c, exist_ok=True)
+
+        os.makedirs(validation_path, exist_ok=True)
+        for c in CLASSES:
+            os.makedirs(validation_path + c, exist_ok=True)
 
         os.makedirs(testing_path, exist_ok=True)
         for c in CLASSES:
@@ -86,6 +99,11 @@ def split_data(
         for filename in training_set:
             this_file = source_path + this_class + filename
             destination = training_path + this_class + filename
+            copyfile(this_file, destination)
+
+        for filename in validation_set:
+            this_file = source_path + this_class + filename
+            destination = validation_path + this_class + filename
             copyfile(this_file, destination)
 
         for filename in testing_set:
@@ -98,9 +116,10 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source_path", type=str, default="data/labeled/")
     parser.add_argument("--training_path", type=str, default="data/train/")
+    parser.add_argument("--validation_path", type=str, default="data/validation/")
     parser.add_argument("--testing_path", type=str, default="data/test/")
     parser.add_argument("--split_size", type=float, default=0.1)
-    parser.add_argument("--max_class_size", type=int, default=10)
+    parser.add_argument("--max_class_size", type=int, default=1000)
     return parser.parse_args()
 
 
@@ -120,12 +139,15 @@ if __name__ == "__main__":
     print(total)
     if os.path.exists(args.training_path):
         delete_images_in_dir(args.training_path)
+    if os.path.exists(args.validation_path):
+        delete_images_in_dir(args.validation_path)
     if os.path.exists(args.testing_path):
         delete_images_in_dir(args.testing_path)
 
     split_data(
         source_path=args.source_path,
         training_path=args.training_path,
+        validation_path=args.validation_path,
         testing_path=args.testing_path,
         split_size=args.split_size,
         max_class_size=args.max_class_size,
