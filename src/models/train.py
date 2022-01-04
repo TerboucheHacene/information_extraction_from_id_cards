@@ -1,5 +1,5 @@
 import tensorflow as tf
-from models import Classifier
+from models import Classifier, get_classifier_model
 import argparse
 from utils import get_loaders, get_class_weight, CLASSES
 import tensorflow_addons as tfa
@@ -7,7 +7,8 @@ import tensorflow_addons as tfa
 
 def train(args):
     # Get model and compile
-    model = Classifier(num_classes=len(CLASSES))
+    # model = Classifier(num_classes=len(CLASSES))
+    model = get_classifier_model(num_classes=len(CLASSES))
     model.compile(
         loss=tf.keras.losses.CategoricalCrossentropy(),
         optimizer=tf.keras.optimizers.Adam(learning_rate=args.learning_rate),
@@ -69,7 +70,7 @@ def parse_args():
     parser.add_argument("--checkpoint_path", type=str, default="models/")
 
     parser.add_argument("--batch_size", type=int, default=128)
-    parser.add_argument("--learning_rate", type=float, default=4e-3)
+    parser.add_argument("--learning_rate", type=float, default=0.0020145)
     parser.add_argument("--epochs", type=int, default=15)
     return parser.parse_args()
 

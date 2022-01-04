@@ -2,17 +2,17 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 from tensorboard.plugins.hparams import api as hp
 import argparse
-from models import Classifier
-from utils import get_loaders, get_class_weight, CLASSES
+from models import Classifier, get_classifier_model
+from utils import get_loaders, get_class_weight, CLASSES, learning_rate_search_space
 import numpy as np
 
 
 def train_test_model(args, hparams) -> float:
     # Get model and compile
-    model = Classifier(num_classes=len(CLASSES))
+    model = get_classifier_model(num_classes=len(CLASSES))
     model.compile(
         loss=tf.keras.losses.CategoricalCrossentropy(),
-        optimizer=tf.keras.optimizers.Adam(lr=hparams[HP_LEARNING_RATE]),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=hparams[HP_LEARNING_RATE]),
         metrics=[
             tfa.metrics.F1Score(
                 num_classes=len(CLASSES), average="macro", name="f1_score"
@@ -37,7 +37,10 @@ def train_test_model(args, hparams) -> float:
         verbose=1,
     )
     callbacks = [early_stopping]
-    class_weight = get_class_weight(source_path=args.train_path)
+    if hparams[HP_USE_CLASS_WEIGHT]:
+        class_weight = get_class_weight(source_path=args.train_path)
+    else:
+        class_weight = None
 
     # Fit the model
     history = model.fit(
@@ -69,28 +72,31 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    learning_rate_search_space = np.linspace(5e-4, 5e-3, 5).tolist()
-    HP_LEARNING_RATE = hp.HParam(
-        "learning_rate", hp.Discrete(learning_rate_search_space)
-    )
+    learning_rate_values = learning_rate_search_space(
+        lower=4e-4, upper=4e-3, size=10
+    ).tolist()
+    HP_LEARNING_RATE = hp.HParam("learning_rate", hp.Discrete(learning_rate_values))
     HP_BATCH_SIZE = hp.HParam("batch_size", hp.Discrete([128]))
+    HP_USE_CLASS_WEIGHT = hp.HParam("class_weight", hp.Discrete([True, False]))
 
     METRIC_F1Score = "f1_score"
     with tf.summary.create_file_writer("logs/hparam_tuning").as_default():
         hp.hparams_config(
-            hparams=[HP_LEARNING_RATE, HP_BATCH_SIZE],
+            hparams=[HP_LEARNING_RATE, HP_BATCH_SIZE, HP_USE_CLASS_WEIGHT],
             metrics=[hp.Metric(METRIC_F1Score, display_name="F1_Score")],
         )
 
     session_num = 0
     for batch_size in HP_BATCH_SIZE.domain.values:
         for learning_rate in HP_LEARNING_RATE.domain.values:
-            hparams = {
-                HP_BATCH_SIZE: batch_size,
-                HP_LEARNING_RATE: learning_rate,
-            }
-            run_name = "run-%d" % session_num
-            print("--- Starting trial: %s" % run_name)
-            print({h.name: hparams[h] for h in hparams})
-            run("logs/hparam_tuning/" + run_name, hparams, args)
-            session_num += 1
+            for use_class_weight in HP_USE_CLASS_WEIGHT.domain.values:
+                hparams = {
+                    HP_BATCH_SIZE: batch_size,
+                    HP_LEARNING_RATE: learning_rate,
+                    HP_USE_CLASS_WEIGHT: use_class_weight,
+                }
+                run_name = "run-%d" % session_num
+                print("--- Starting trial: %s" % run_name)
+                print({h.name: hparams[h] for h in hparams})
+                run("logs/hparam_tuning/" + run_name, hparams, args)
+                session_num += 1

@@ -71,16 +71,14 @@ def separate_lines(imageB: np.array, imageG: np.array) -> List[np.array]:
             l.append(lines[cmp])
             l.append(lines[cmp + 1])
         cmp += 1
-    l1 = imageG[l[0] : l[1], :]
-    l2 = imageG[l[2] : l[3], :]
-    l3 = imageG[l[4] : l[5], :]
+    l1 = imageG[l[0] : l[1] + 3, :]
+    l2 = imageG[l[2] - 3 : l[3] + 3, :]
+    l3 = imageG[l[4] - 3 : l[5] + 3, :]
     images = [l1, l2, l3]
-    l1 = imageB[0 : l[1], :]
-    l2 = imageB[l[2] : l[3], :]
-    l3 = imageB[l[4] : l[5], :]
-    images.append(l1)
-    images.append(l2)
-    images.append(l3)
+    l1 = imageB[l[0] : l[1] + 3, :]
+    l2 = imageB[l[2] - 3 : l[3] + 3, :]
+    l3 = imageB[l[4] - 3 : l[5] + 3, :]
+    images += [l1, l2, l3]
     return images
 
 
@@ -99,15 +97,68 @@ def separate_characters(imageB: np.array, imageG: np.array) -> List[List]:
             l.append(lines[cmp + 1])
         cmp += 1
     if len(l) < 60:
-        l.append(N)
-        l.append(N)
+        l += [N, N]
     if len(l) > 60:
         l = l[:60]
     characters = []
-    characters.append(imageG[:, 0 : l[1]])
+    characters.append(imageG[:, 0 : l[1] + 5])
     cmp = 2
     while cmp < len(l) - 3:
         characters.append(imageG[:, l[cmp] - 3 : l[cmp + 1] + 3])
         cmp += 2
     characters.append(imageG[:, l[-3] :])
     return characters
+
+
+def get_characters_from_image(image: np.array) -> List[List]:
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    rectKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (13, 5))
+    sqKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25))
+    image = imutils.resize(image, height=600)
+    gray = cv2.GaussianBlur(image, (3, 3), 0)
+    blackhat = cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, rectKernel)
+    gradX = cv2.Sobel(blackhat, ddepth=cv2.CV_32F, dx=1, dy=0, ksize=-1)
+    gradX = np.absolute(gradX)
+    (minVal, maxVal) = (np.min(gradX), np.max(gradX))
+    gradX = (255 * ((gradX - minVal) / (maxVal - minVal))).astype("uint8")
+    gradX = cv2.morphologyEx(gradX, cv2.MORPH_CLOSE, rectKernel)
+    thresh = cv2.threshold(gradX, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+    thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, sqKernel)
+    thresh = cv2.erode(thresh, None, iterations=4)
+    p = int(image.shape[1] * 0.05)
+    thresh[:, 0:p] = 0
+    thresh[:, image.shape[1] - p :] = 0
+    cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+    for c in cnts:
+        (x, y, w, h) = cv2.boundingRect(c)
+        ar = w / float(h)
+        crWidth = w / float(gray.shape[1])
+        if ar > 4 and crWidth > 0.5:
+            pX = int((x + w) * 0.05)
+            pY = int((y + h) * 0.05)
+            (x, y) = (x - pX, y - pY)
+            (w, h) = (w + (pX * 2), h + (pY * 2))
+            roi = image[y : y + h, x : x + w]
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            break
+    M, N = roi.shape
+    roi[0:1, :] = 255
+    roi[M - 1 : M, :] = 255
+    roi[:, 0:1] = 255
+    roi[:, N - 1 : N] = 255
+    roi = deskew(roi)
+    (thresh, im_bw1) = cv2.threshold(
+        roi, 127, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU
+    )
+    M, N = roi.shape
+    s = 10
+    im_bw1 = im_bw1[s : M - s, s : N - s]
+    roi = roi[s : M - s, s : N - s]
+    images = separate_lines(im_bw1, roi)
+    sub_images = []
+    for i in range(0, 3):
+        characters = separate_characters(images[i + 3], images[i])
+        sub_images.append(characters)
+    return sub_images

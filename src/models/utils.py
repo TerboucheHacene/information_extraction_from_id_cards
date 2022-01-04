@@ -29,11 +29,16 @@ CLASSES = [
     "L",
     "M",
     "N",
+    "O",
+    "P",
+    "Q",
     "R",
     "S",
     "T",
     "U",
+    "V",
     "W",
+    "X",
     "Y",
     "Z",
     "<",
@@ -97,6 +102,15 @@ def get_class_weight(source_path, mu=0.15) -> Dict:
         class_weight[key] = score if score > 1.0 else 1.0
 
     return class_weight
+
+
+def learning_rate_search_space(lower=1e-4, upper=1e-1, size=5):
+    a = np.log10(lower)
+    b = np.log10(upper)
+    r = (b - a) * np.random.rand(size) + a
+    lr = np.power(10, r)
+    lr = np.sort(lr)
+    return lr
 
 
 class ConfusionMatrix(tf.keras.metrics.Metric):
