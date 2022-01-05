@@ -30,10 +30,8 @@ def _process(image_name: str, input_path: Path, output_path: Path) -> None:
 
 def arg_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_path", "-i,", type=str, default="data_sample/all/")
-    parser.add_argument(
-        "--output_path", "-o", type=str, default="data_sample/processed/"
-    )
+    parser.add_argument("--input_path", "-i,", type=str, default="data/raw/")
+    parser.add_argument("--output_path", "-o", type=str, default="data/processed/")
     return parser.parse_args()
 
 

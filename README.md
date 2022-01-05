@@ -1,7 +1,7 @@
 # Personal Information Extraction from ID Cards
 This project is a computer vision system that can detect and localize region text, also called **machine-readable zone (MRZ)** in a scan of an ID card. Then, the goal is to extract the personal informations such as the ID card holder's name, ID number, date of birth, sex and expiration data. 
 
-This project involves using MRZ of [type 1](https://en.wikipedia.org/wiki/ISO/IEC_7810), corresponding to the ISO/IEC 7810 sizes, with **3 lines $\times$ 30 characters**.  This is an example of a Belguim ID card found in the internet. 
+This project involves using MRZ of [type 1](https://en.wikipedia.org/wiki/ISO/IEC_7810), corresponding to the ISO/IEC 7810 sizes, with **3 lines * 30 characters**.  This is an example of a Belguim ID card found in the internet. 
 
 <p align="center">
 <img src="images/id_example.png" alt="drawing" width="600"/>

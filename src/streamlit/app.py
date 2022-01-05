@@ -21,11 +21,15 @@ def load_artifacts(_settings):
 
 settings = Settings()
 inference_system = load_artifacts(_settings=settings)
+
+st.title("Personal Information Extraction from ID Cards")
+
 image_input = st.file_uploader(
-    "ID Card Image",
+    "Load your ID Card Scan",
     type=["png", "jpg", "jpeg"],
     accept_multiple_files=False,
 )
+
 
 col1, col2 = st.columns(2)
 

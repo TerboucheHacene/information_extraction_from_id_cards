@@ -127,7 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/data/
 /logs/
-/my_models/
+/local_models/
 /data_sample/
+/local_data/
