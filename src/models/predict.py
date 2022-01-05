@@ -1,10 +1,10 @@
 import sys
 
 sys.path.append("src/data/")
+from utils_old import get_characters_from_image
 import cv2
 import tensorflow as tf
 import numpy as np
-from process import get_characters_from_image
 import argparse
 
 CLASSES = [
