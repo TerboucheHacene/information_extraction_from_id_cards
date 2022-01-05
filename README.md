@@ -14,7 +14,7 @@ This repo includes:
 * Train and tune a basic CNN model to classify grayscale images
 * Implement the pipeline to get personal informations from a signle scan
 * Deploy the trained model using FastAPI and Docker/Docker-compose
-* Streamlit App to showcase the system
+* [Streamlit App](https://share.streamlit.io/terbouchehacene/information_extraction_from_id_cards/main/src/streamlit/app.py) to showcase the system
 
 # How to run
 * Clone this repo
@@ -71,6 +71,7 @@ Data was gathered from the internet as well as my friends's ID cards. In total, 
 <img src="images/streamlit_app.png" alt="drawing" width="400", height="410"/>
 </p>
 
+* You can also test the system on [streamlit cloud](https://share.streamlit.io/terbouchehacene/information_extraction_from_id_cards/main/src/streamlit/app.py)
 # Deployment using FastAPI and Docker
 We deploy the model as an HTTP endpoint using FastAPI, and then dockerize the code in a docker image.
 * To build the image:
