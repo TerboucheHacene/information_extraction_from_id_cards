@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 /data/
 /logs/
-/models/
+/my_models/
 /data_sample/
