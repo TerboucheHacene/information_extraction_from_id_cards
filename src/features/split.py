@@ -119,7 +119,7 @@ def split_data(
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source_path", type=str, default="data/labeled/")
+    parser.add_argument("--source_path", type=str, default="data/labeled_v2/")
     parser.add_argument("--training_path", type=str, default="data/train/")
     parser.add_argument("--validation_path", type=str, default="data/validation/")
     parser.add_argument("--testing_path", type=str, default="data/test/")

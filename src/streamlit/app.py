@@ -27,15 +27,21 @@ image_input = st.file_uploader(
     accept_multiple_files=False,
 )
 
+col1, col2 = st.columns(2)
+
 if image_input is not None:
     bytes_data = image_input.getvalue()
     nparr = np.frombuffer(bytes_data, np.uint8)
     img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     img_np = np.array(img_np)
-    fig, ax = plt.subplots()
-    ax.imshow(img_np)
-    st.pyplot(fig)
 
-    information = inference_system.predict(img_np)
-    for k, v in information.dict().items():
-        st.metric(k, v)
+    with col1:
+        plt.figure(figsize=(12, 8))
+        fig, ax = plt.subplots()
+        ax.imshow(img_np)
+        st.pyplot(fig)
+
+    with col2:
+        information = inference_system.predict(img_np)
+        for k, v in information.dict().items():
+            st.metric(k, v)
